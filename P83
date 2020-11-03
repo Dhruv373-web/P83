@@ -1,0 +1,34 @@
+import React ,{Component} from 'react';
+import {View,Text,StyleSheet,TouchableOpacity} from 'react-native';
+import{Card,Header,Icon} from 'react-native-elements';
+import firebase from 'firebase';
+
+import db from '../config.js';
+addNotification=()=>{
+    var message = this.state.userName + " has shown interest in donating the book"
+    db.collection("all_notifications").add({
+      "targeted_user_id"    : this.state.recieverId,
+      "donor_id"            : this.state.userId,
+      "request_id"          : this.state.requestId,
+      "book_name"           : this.state.bookName,
+      "date"                : firebase.firestore.FieldValue.serverTimestamp(),
+      "notification_status" : "unread",
+      "message"             : message
+    })
+  }
+getNotifications=()=>{
+    this.requestRef = db.collection("all_notifications")
+    .where("notification_status", "==", "unread")
+    .where("targeted_user_id",'==',this.state.userId)
+    .onSnapshot((snapshot)=>{
+      var allNotifications =  []
+      snapshot.docs.map((doc) =>{
+        var notification = doc.data()
+        notification["doc_id"] = doc.id
+        allNotifications.push(notification)
+      });
+      this.setState({
+          allNotifications : allNotifications
+      });
+    })
+  }
